@@ -1,13 +1,136 @@
-import React from 'react'
-import './App.css';
-import FetchCases from './components/fetchCases'
+import React, { useState, useEffect } from 'react'
+import styled from 'styled-components'
+import { useTable } from 'react-table'
 
-function App() {
+const Styles = styled.div`
+  padding: 1rem;
+  table {
+    border-spacing: 0;
+    border: 1px solid black;
+    tr {
+      :last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
+    }
+    th,
+    td {
+      margin: 0;
+      padding: 0.5rem;
+      border-bottom: 1px solid black;
+      border-right: 1px solid black;
+      :last-child {
+        border-right: 0;
+      }
+    }
+  }
+`
+
+function Table({ columns, data }) {
+  // Use the state and functions returned from useTable to build your UI
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable({
+    columns,
+    data,
+  })
+
+  // Render the UI for your table
   return (
-    <div className='App'>
-      <FetchCases />
-    </div>
-  );
+    <table {...getTableProps()}>
+      <thead>
+        {headerGroups.map(headerGroup => (
+          <tr {...headerGroup.getHeaderGroupProps()}>
+            {headerGroup.headers.map(column => (
+              <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+      <tbody {...getTableBodyProps()}>
+        {rows.map((row, i) => {
+          prepareRow(row)
+          return (
+            <tr {...row.getRowProps()}>
+              {row.cells.map(cell => {
+                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+              })}
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
 }
 
-export default App;
+function App() {
+  const [items, setItems] = useState([]);
+
+  // Note: the empty deps array [] means
+  // this useEffect will run once
+  // similar to componentDidMount()
+  useEffect(() => {
+    fetch("https://611cf8c67d273a0017e2f550.mockapi.io/api/v1/cases")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setItems(result)
+        }
+      )
+  }, [])
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: '#',
+        accessor: 'accountId'
+      },
+      {
+        Header: 'Account Type',
+        accessor: 'accountType'
+      },
+      
+      {
+        Header: 'Account Display Name',
+        accessor: 'displayName'
+      },
+      {
+        Header: 'Price ($)',
+        accessor: 'price'
+      },
+      {
+        Header: 'Quantity',
+        accessor: 'quantity'
+      },
+      {
+        Header: 'Direction',
+        accessor: 'role'
+      },
+      {
+        Header: 'Volume ($)',
+        accessor: 'total'
+      },
+      {
+        Header: 'Trade Time',
+        accessor: 'tradeTime'
+      },
+      
+    ],
+    []
+  )
+
+  const data = React.useMemo(() => items, [])
+
+  return (
+    <Styles>
+      <Table columns={columns} data={data} />
+    </Styles>
+  )
+}
+
+export default App
