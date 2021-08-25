@@ -68,18 +68,68 @@ function Table({ columns, data }) {
   )
 }
 
+function timeConverter(UNIX_timestamp, index){
+  var a = new Date((UNIX_timestamp + index) * 1000);
+  var year = a.getFullYear();
+  var month = a.getMonth();
+  var date = a.getDate();
+  var time = date + ' ' + month + ' ' + year;
+  return time;
+}
+
+function ReactApexChart({ options, series }) {
+  const options = React.useMemo(() => items, [])
+  this.state = {
+          
+    series: [{
+      name: "Desktops",
+      data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
+    }],
+    options: {
+      chart: {
+        height: 350,
+        type: 'line',
+        zoom: {
+          enabled: false
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'straight'
+      },
+      title: {
+        text: 'Product Trends by Month',
+        align: 'left'
+      },
+      grid: {
+        row: {
+          colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+          opacity: 0.5
+        },
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+      }
+    },     
+  };
+}
+
 function App() {
   const [items, setItems] = useState([]);
 
-  // Note: the empty deps array [] means
-  // this useEffect will run once
-  // similar to componentDidMount()
   useEffect(() => {
     fetch("https://611cf8c67d273a0017e2f550.mockapi.io/api/v1/cases")
       .then(res => res.json())
       .then(
         (result) => {
-          setItems(result)
+          result.forEach((element, index=0) => {
+            index = index + 1;
+            element.tradeTime = timeConverter(parseInt(element.tradeTime),index);
+          });
+          
+          setItems(result);
         }
       )
   }, [])
@@ -129,7 +179,12 @@ function App() {
   return (
     <Styles>
       <Table columns={columns} data={data} />
+      <div id="chart">
+        <ReactApexChart options={this.state.options} series={this.state.series} />
+      </div>
+
     </Styles>
+    
   )
 }
 
